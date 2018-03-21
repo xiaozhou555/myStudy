@@ -1,0 +1,83 @@
+1.下载  npm i axios
+
+2.对axios进行封装，方便接口管理，新建src->api->index.js.  代码如下
+      import axios from 'axios'
+      import qs from 'qs'
+
+      //the axios config
+      axios.defaults.timeout = 10000;
+      axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-	urlencoded;charset=UTF-8';
+	axios.defaults.baseURL = 'http://**.106.221.124/***';//域名
+
+	//axios请求拦截器
+	axios.interceptors.request.use(function(config){
+	if(config.method === 'post'){
+	config.data = qs.stringify(config.data);
+	}
+	return config;
+	},function(error){
+	return Promise.reject(error);
+	});
+
+	//axios响应拦截器
+	axios.interceptors.response.use(function(response){
+	// let result = JSON.parse(response.data);
+	let result = response.data;
+	console.log(result);
+		if(result.code===-2333){
+	location.hash = '/';
+	}
+	return result;
+	},function(error){
+	return Promise.reject(error);
+	});
+
+	export default{
+	//登录接口
+	login(datas){
+	return axios.post('**/***', datas);
+	},
+	//注册接口
+	register(datas){
+	return axios.get('user/regisUser', datas);
+	},
+	....
+	....
+	.....
+	}
+
+3.main.js导入：
+  	import ajaxAPI from './api/index'
+ 
+4.封装全局静态函数，直接写在main.js里面
+   Vue.prototype.$ajax = function(fun,datas,success,er){
+  ajaxAPI[fun](datas)
+    .then(function(response){
+      success(response);
+
+    })
+    .catch(function(error){
+      er(error);
+    })
+}
+
+5.使用，以登录接口为列
+   this.$ajax('login', {
+            'userPhone': self.iphone,
+            'userPassword': self. pwd
+          }, (ms) => {
+            console.log(ms);
+            if(ms.code==1) {
+              Toast('登录成功')
+              self.$router.push('/');//跳入页面
+              self.$store.commit("changeLoginStatus", true); //修改登录状态
+            }
+            else{
+              Toast('账号或者密码错误')
+            }
+          }, (error) => {
+            console.log(error);
+          });
+   
+
+6.心得：把所有接口都写在index.js里面方便管理。易于维护
