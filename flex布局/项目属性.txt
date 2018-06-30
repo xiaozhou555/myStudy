@@ -1,0 +1,8 @@
+
+        order：值越小越靠前
+        flex-grow：放大，默认0
+        flex-shrink：缩小，默认1
+        flex-basis：浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。
+        flex：234的缩写
+        align-self：继承容器的alingn-item，否则无效
+
