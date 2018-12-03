@@ -1,0 +1,334 @@
+<template>
+<div id="select-time2">
+  <div class="content">
+       <div class="select-bar">
+         <ul>
+           <li>
+             <span @click="changeTar(1)" :class="{'select-span':tarType==1}">2018-11-1</span>
+             <span @click="changeTar(2)" :class="{'select-span':tarType==2}">下午</span>
+           </li>
+           <li @click="pickNext">完成</li>
+         </ul>
+       </div>
+       <div v-if=" tarType==1" class="bar-one">
+            <ul class="week">
+              <li>日</li>
+              <li>一</li>
+              <li>二</li>
+              <li>三</li>
+              <li>四</li>
+              <li>五</li>
+              <li>六</li>
+            </ul>
+         <div class="days">
+         <!-- 日期 -->
+         <ul >
+           <!-- 核心 v-for循环 每一次循环用<li>标签创建一天 -->
+           <li  v-for="dayobject in days" >
+             <!--本月-->
+             <!--如果不是本月  改变类名加灰色-->
+             <span v-if="dayobject.day.getMonth()+1 != currentMonth" class="other-month">
+              {{ dayobject.day.getDate() }}
+            </span>
+
+             <!--如果是本月  还需要判断是不是这一天-->
+             <span v-else>
+          <!--今天  同年同月同日-->
+                <span v-if="dayobject.day.getFullYear() == new Date().getFullYear()
+                           && dayobject.day.getMonth() == new Date().getMonth()
+                           && dayobject.day.getDate() == new Date().getDate()"
+                      class="active">{{ dayobject.day.getDate() }}</span>
+                <span v-else class="putong" :class="{'select-day':dayobject.day.getDate()==5}">{{ dayobject.day.getDate() }}</span>
+            </span>
+
+           </li>
+         </ul>
+
+         <!-- 日期 -->
+         <ul >
+           <!-- 核心 v-for循环 每一次循环用<li>标签创建一天 -->
+           <li  v-for="dayobject in days" >
+             <!--本月-->
+             <!--如果不是本月  改变类名加灰色-->
+             <span v-if="dayobject.day.getMonth()+1 != currentMonth" class="other-month">
+              {{ dayobject.day.getDate() }}
+            </span>
+
+             <!--如果是本月  还需要判断是不是这一天-->
+             <span v-else>
+          <!--今天  同年同月同日-->
+                <span v-if="dayobject.day.getFullYear() == new Date().getFullYear()
+                           && dayobject.day.getMonth() == new Date().getMonth()
+                           && dayobject.day.getDate() == new Date().getDate()"
+                      class="active">{{ dayobject.day.getDate() }}</span>
+                <span v-else class="putong" :class="{'select-day':dayobject.day.getDate()==5}">{{ dayobject.day.getDate() }}</span>
+            </span>
+
+           </li>
+         </ul>
+
+         <!-- 日期 -->
+         <ul >
+           <!-- 核心 v-for循环 每一次循环用<li>标签创建一天 -->
+           <li  v-for="dayobject in days" >
+             <!--本月-->
+             <!--如果不是本月  改变类名加灰色-->
+             <span v-if="dayobject.day.getMonth()+1 != currentMonth" class="other-month">
+              {{ dayobject.day.getDate() }}
+            </span>
+
+             <!--如果是本月  还需要判断是不是这一天-->
+             <span v-else>
+          <!--今天  同年同月同日-->
+                <span v-if="dayobject.day.getFullYear() == new Date().getFullYear()
+                           && dayobject.day.getMonth() == new Date().getMonth()
+                           && dayobject.day.getDate() == new Date().getDate()"
+                      class="active">{{ dayobject.day.getDate() }}</span>
+                <span v-else class="putong" :class="{'select-day':dayobject.day.getDate()==5}">{{ dayobject.day.getDate() }}</span>
+            </span>
+
+           </li>
+         </ul>
+         </div>
+
+       </div>
+       <div v-if="tarType==2" class="bar-two">
+         <picker :data='moa' v-model='moaVal' @on-change='changeMoA'></picker>
+       </div>
+  </div>
+</div>
+</template>
+
+<script>
+    import {Picker} from 'vux'
+    export default {
+        name: "select-time2",
+      data(){
+          return{
+            tarType:1,//切换状态
+            moa:[['早上','下午']],
+            moaVal:['早上'],
+
+            currentDay: 1,
+            currentMonth: 1,
+            currentYear: 2018,
+            currentWeek: 1,
+            
+            daysPre: [],
+            days: [],
+            daysNext: [],
+            sum:42,
+
+            preDivCalendar: {year: 2018, month: 6}, // 第一个div显示的日历
+            middleDivCalendar: {year: 2018, month: 7}, // 中间div显示的日历
+            nextMiddleDivCalendar: {year: 2018, month: 8}, // 最后一个div显示的日历
+
+
+          }
+      },
+      created() {  //在vue初始化时调用
+        this.initData(null);
+      },
+      components:{
+        Picker
+      },
+      methods:{
+        initData(cur) {
+          var leftcount=0; //存放剩余数量
+          var date;
+          const self = this
+          if (cur) {
+            date = new Date(cur);
+            console.log(cur, 'cur');
+          } else {
+            var now=new Date();
+            var d = new Date(this.formatDate(now.getFullYear() , now.getMonth() , 1));
+            d.setDate(self.sum);
+            date = new Date(this.formatDate(d.getFullYear(),d.getMonth() + 1,1));
+          }
+          this.currentDay = date.getDate();
+          this.currentYear = date.getFullYear();
+          this.currentMonth = date.getMonth() + 1;
+
+          this.currentWeek = date.getDay(); // 1...6,0
+          if (this.currentWeek == 0) {
+            this.currentWeek = 7;
+          }
+          var str = this.formatDate(this.currentYear , this.currentMonth, this.currentDay);
+          this.days.length = 0;
+          // 今天是周日，放在第一行第7个位置，前面6个
+          //初始化本周
+          //for (var i = this.currentWeek-1 ; i >= 0; i--) {
+          for (var i = this.currentWeek ; i > 0; i--) {
+            var d = new Date(str);
+            d.setDate(d.getDate() - i);
+            var dayobject={}; //用一个对象包装Date对象  以便为以后预定功能添加属性
+            dayobject.day=d;
+            this.days.push(dayobject);//将日期放入data 中的days数组 供页面渲染使用
+          }
+          //其他周
+          //for (var i = 1; i <= 35 - this.currentWeek; i++) {
+          for (var i = 0; i < self.sum - this.currentWeek; i++) {
+            var d = new Date(str);
+            d.setDate(d.getDate() + i);
+            var dayobject={};
+            dayobject.day=d;
+            this.days.push(dayobject);
+          }
+
+        },
+        // 返回 类似 2018-01-01 格式的字符串
+        formatDate(year,month,day){
+          var y = year;
+          var m = month;
+          if(m<10) m = "0" + m;
+          var d = day;
+          if(d<10) d = "0" + d;
+          return y+"-"+m+"-"+d;
+        },
+        //上个月，下个月
+        pickPre(year, month) {
+          var d = new Date(this.formatDate(year , month , 1));
+          d.setDate(42);
+          this.initData(this.formatDate(d.getFullYear(),d.getMonth() + 1,1));
+        },
+        pickNext(year, month) {
+          var d = new Date(this.formatDate(year , month , 1));
+          d.setDate(42);
+          this.initData(this.formatDate(d.getFullYear(),d.getMonth() + 1,1));
+        },
+
+        changeTar(type){
+          this.tarType=type
+        },
+        changeMoA(val){
+          console.log(val);
+        }
+      }
+    }
+</script>
+
+<style lang="less">
+#select-time2{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 3000;
+  bottom: 0;
+  overflow: hidden;
+  background:rgba(0,0,0,.3);
+  /*opacity:0.3;*/
+  .content {
+    position: absolute;
+    bottom: 0;
+    z-index: 4000;
+    width: 100%;
+    height: auto;
+    .select-bar {
+      width: 100%;
+      height: auto;
+      background: rgba(246, 246, 246, 1);
+      box-sizing: border-box;
+      padding: 0 .3rem;
+      line-height: .85rem;
+      ul{
+        display: flex;
+        justify-content: space-between;
+        li:first-child{
+          >span{
+            display: inline-block;
+            height: .85rem;
+            margin-right: .8rem;
+            font-size:.30rem;
+            //:PingFang-SC-Medium;
+            font-weight:500;
+            color:rgba(102,102,102,1);
+          }
+          >.select-span{
+             border-bottom: solid 2px #999999;
+          }
+        }
+        li:last-child{
+          font-size:.30rem;
+          font-family:PingFang-SC-Medium;
+          font-weight:500;
+          color:rgba(0,102,255,1);
+        }
+      }
+    }
+    .bar-two{
+      height: 7.74rem;
+      width: 100%;
+      background-color: #fff;
+    }
+    .bar-one {
+      height: 7.74rem;
+      background-color: #fff;
+      width: 100%;
+      .week{
+        display: flex;
+        >li{
+          flex: 1;
+          text-align: center;
+          height: .54rem;
+          border-bottom: 1px solid rgba(187,187,187,1);
+          line-height: .54rem;
+          font-size:.24rem;
+          font-weight:500;
+          color:rgba(51,51,51,1);
+        }
+      }
+      .days {
+        height: 7.2rem;
+        overflow: scroll;
+        ul {
+          display: flex;
+          flex-wrap: wrap;
+          height: 7.2rem;
+          .select-day {
+            background-color: rgba(42, 144, 247, 1);
+            color: white;
+          }
+          li {
+            width: calc(100% / 7);
+            text-align: center;
+            font-size: .34rem;
+            height: 1.2rem;
+            /*height: auto;*/
+            box-sizing: border-box;
+            /*padding: .3rem 0;*/
+            /*padding: .3rem 0;*/
+            font-weight: 500;
+            color: rgba(51, 51, 51, 1);
+          }
+          .putong {
+            display: inline-block;
+            height: 1.2rem !important;
+            width: 100%;
+            padding: .3rem 0
+          }
+          .active {
+            display: inline-block;
+            color: #2A90F7;
+            height: 1.2rem !important;
+            padding: .3rem 0
+          }
+          .other-month {
+            display: inline-block;
+            /*display: none;*/
+            padding: .3rem 0;
+            /*height: 0!important;*/
+            color: rgba(153, 153, 153, 1);
+
+          }
+
+          /*li{*/
+          /*display: flex;*/
+          /*}*/
+        }
+      }
+    }
+  }
+}
+
+</style>
